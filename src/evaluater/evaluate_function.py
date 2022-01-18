@@ -1,4 +1,3 @@
-
 import os
 import glob
 import json
@@ -16,7 +15,7 @@ def image_file_to_json(img_path):
 
 
 def image_dir_to_json(img_dir, img_type='jpg'):
-    img_paths = glob.glob(os.path.join(img_dir, '*.'+img_type))
+    img_paths = glob.glob(os.path.join(img_dir, '*.' + img_type))
 
     samples = []
     for img_path in img_paths:
@@ -30,7 +29,7 @@ def predict(model, data_generator):
     return model.predict_generator(data_generator, workers=8, use_multiprocessing=True, verbose=1)
 
 
-def main(base_model_name, weights_file, image_source, predictions_file, img_format='jpg'):
+def evaluate(base_model_name, weights_file, image_source, img_format='jpg'):
     # load samples
     if os.path.isfile(image_source):
         image_dir, samples = image_file_to_json(image_source)
@@ -54,22 +53,44 @@ def main(base_model_name, weights_file, image_source, predictions_file, img_form
     for i, sample in enumerate(samples):
         sample['mean_score_prediction'] = calc_mean_score(predictions[i])
 
-    print(json.dumps(samples, indent=2))
-    print('vittu perkele')
+    return samples
 
 
-    if predictions_file is not None:
-        save_json(samples, predictions_file)
+class HelperEvaluator:
+    def __init__(self, base_model_name, weights_file):
+        self.nima = Nima(base_model_name, weights=None)
+        self.nima.build()
+        self.nima.nima_model.load_weights(weights_file)
+
+    def evaluate(self, image_dir, img_format='jpg'):
+        samples = image_dir_to_json(image_dir, img_type='jpg')
+        data_generator = TestDataGenerator(samples, image_dir, 64, 10, self.nima.preprocessing_function(),
+                                           img_format=img_format)
+
+        # get predictions
+        predictions = predict(self.nima.nima_model, data_generator)
+
+        # calc mean scores and add to samples
+        for i, sample in enumerate(samples):
+            sample['mean_score_prediction'] = calc_mean_score(predictions[i])
+
+        return samples
 
 
 if __name__ == '__main__':
-    print('vittu perkele')
+    print('EVALUATING')
+    print('*' * 38)
     parser = argparse.ArgumentParser()
-    parser.add_argument('-b', '--base-model-name', help='CNN base model name', required=True)
-    parser.add_argument('-w', '--weights-file', help='path of weights file', required=True)
     parser.add_argument('-is', '--image-source', help='image directory or file', required=True)
-    parser.add_argument('-pf', '--predictions-file', help='file with predictions', required=False, default=None)
 
     args = parser.parse_args()
 
-    main(**args.__dict__)
+    # Basic config
+    WORKDIR: str = os.getcwd()
+    BASE_MODEL_NAME: str = 'MobileNet'
+    WEIGHTS_FILE: str = 'src/weights.hdf5'
+    print(WEIGHTS_FILE)
+    print(f'PWD: {os.listdir("..")}')
+
+    he = HelperEvaluator(base_model_name=BASE_MODEL_NAME, weights_file=WEIGHTS_FILE)
+    print(he.evaluate(args.image_source))
