@@ -74,6 +74,7 @@ class HelperEvaluator:
         for i, sample in enumerate(samples):
             sample['mean_score_prediction'] = calc_mean_score(predictions[i])
 
+        samples = sorted(samples, key=lambda x: int(x['image_id']))
         return samples
 
 
@@ -88,9 +89,9 @@ if __name__ == '__main__':
     # Basic config
     WORKDIR: str = os.getcwd()
     BASE_MODEL_NAME: str = 'MobileNet'
-    WEIGHTS_FILE: str = 'src/weights.hdf5'
+    WEIGHTS_FILE: str = './weights.hdf5'
     print(WEIGHTS_FILE)
-    print(f'PWD: {os.listdir("..")}')
+    # print(f'PWD: {os.listdir("weights.hdf5")}')
 
     he = HelperEvaluator(base_model_name=BASE_MODEL_NAME, weights_file=WEIGHTS_FILE)
     print(he.evaluate(args.image_source))
