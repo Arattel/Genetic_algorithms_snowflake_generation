@@ -1,8 +1,10 @@
+import cv2
 import random
 import numpy as np
 from PIL import Image
 from utils.evaluate_function import HelperEvaluator
 import os
+from snowflake.snowflake import Snowflake
 
 
 class GA:
@@ -16,7 +18,7 @@ class GA:
     In this genetic algorithm implementation genome is a set of vertices, starting with the first one and ending with the last one
     """
 
-    def __init__(self, verbose=True, genome_size=3, population_size=100,
+    def __init__(self, verbose=True, genome_size=4, population_size=100,
                  evaluator: HelperEvaluator = None, img_format: str = 'jpg'):
         self.verbose = verbose
         self.GENOME_SIZE = genome_size
@@ -47,11 +49,10 @@ class GA:
         return np.concatenate([p1, p2])
 
     def _render_image(self, genome, filename) -> None:
-        """
-        TODO: Remove this mockup image rendering function based on genome
-        """
-        rgb = np.random.randint(255, size=(900, 800, 3), dtype=np.uint8)
-        img = Image.fromarray(rgb, 'RGB')
+        s = Snowflake(genome)
+        s.generate()
+        final_img = s.draw(max_height=1000)
+        img = Image.fromarray(final_img, 'RGB')
         img.save(filename)
 
     def render_population(self, population, epoch):
