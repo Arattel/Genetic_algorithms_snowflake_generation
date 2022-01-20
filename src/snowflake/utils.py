@@ -5,12 +5,12 @@ import random
 from .models import Point, Segment
 
 
-def rand(min_, max_):
-    return random.random() * (max_ - min_) + min_
+def rand(min_, max_, rnd=random):
+    return rnd.random() * (max_ - min_) + min_
 
 
-def prob(p):
-    return random.random() < p
+def prob(p, rnd=random):
+    return rnd.random() < p
 
 
 def dist(p1, p2):
@@ -76,10 +76,10 @@ def calc_square(p1, p2, p3):
     return math.sqrt(p * (p - 1) * (p - b) * (p - c))
 
 
-def random_point_between(p1, p2):
+def random_point_between(p1, p2, rnd=random):
     dx = p2.x - p1.x
     dy = p2.y - p1.y
-    ratio = random.random()
+    ratio = rnd.random()
     return Point(p1.x + dx * ratio, p1.y + dy * ratio)
 
 

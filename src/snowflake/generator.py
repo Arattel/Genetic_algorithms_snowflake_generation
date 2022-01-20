@@ -13,26 +13,27 @@ MAX_SLANT_ANG = 60
 
 
 class TopCutter:
-    def __init__(self, left_segment, right_segment):
+    def __init__(self, left_segment, right_segment, seed):
         self.left = left_segment
         self.right = right_segment
         self.top = Segment(left_segment.end, right_segment.start)
+        self.rnd = random.Random(seed)
 
     def generate(self):
         if prob(FULL_CUT_PROB):
             top_last_pt = get_point_from_start(
                 self.right, 
-                rand(FULL_CUT_MIN_FRAC, FULL_CUT_MAX_FRAC)
+                rand(FULL_CUT_MIN_FRAC, FULL_CUT_MAX_FRAC, self.rnd)
             )
             return [Segment(self.left.end, top_last_pt)]
 
-        top_first_ang = self.left.rev_ang_deg() - rand(MIN_ANG, MAX_ANG)
-        top_first_len = self.top.len() * rand(PART_CUT_MIN_LEN, PART_CUT_MAX_LEN)
+        top_first_ang = self.left.rev_ang_deg() - rand(MIN_ANG, MAX_ANG, self.rnd)
+        top_first_len = self.top.len() * rand(PART_CUT_MIN_LEN, PART_CUT_MAX_LEN, self.rnd)
         top_first = from_ang_and_len(self.left.end, top_first_ang * to_rad(), top_first_len)
         top_to_intersect = from_ang_and_len(self.left.end, top_first_ang * to_rad(), self.left.len())
         int_pt = intersect(self.right, top_to_intersect)
 
-        next = Segment(top_first.end, random_point_between(self.right.start, int_pt))
+        next = Segment(top_first.end, random_point_between(self.right.start, int_pt, self.rnd))
         return [top_first, next]
 
 

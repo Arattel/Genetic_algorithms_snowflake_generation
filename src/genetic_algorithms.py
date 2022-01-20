@@ -18,7 +18,7 @@ class GA:
     In this genetic algorithm implementation genome is a set of vertices, starting with the first one and ending with the last one
     """
 
-    def __init__(self, verbose=True, genome_size=4, population_size=100,
+    def __init__(self, verbose=True, genome_size=5, population_size=100,
                  evaluator: HelperEvaluator = None, img_format: str = 'jpg'):
         self.verbose = verbose
         self.GENOME_SIZE = genome_size

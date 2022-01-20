@@ -38,7 +38,7 @@ class Snowflake:
 
         self.left = Segment(Point(self.mw / 2, y + self.mh), Point(x, y))
         self.right = Segment(Point(x + self.mw, y), Point(self.mw / 2, y + self.mh))
-        self.top_cutter = TopCutter(self.left, self.right)
+        self.top_cutter = TopCutter(self.left, self.right, genome[4])
         self.cutout_gen = CutoutGenerator(self.genome, self.mw, max(self.mw, self.mh))
 
     def reset(self):
@@ -121,7 +121,7 @@ class Snowflake:
 
 if __name__ == "__main__":
     # generate snowflake
-    s = Snowflake(genome=[1., 1., 1., 1.])
+    s = Snowflake(genome=np.random.rand(5) * 7)
     s.generate()
     final_img = s.draw(max_height=1000)
     cv2.imwrite("tmp.png", final_img)
