@@ -5,11 +5,14 @@ from PIL import Image
 from utils.evaluate_function import HelperEvaluator
 import os
 from snowflake.snowflake import Snowflake
+from tqdm import tqdm
+import argparse
+import pandas as pd
 
 
 class GA:
-    RANDOM_GENOME_SCALE: float = 7.0
-    MUTATION_RATE: float = .2
+    RANDOM_GENOME_SCALE: float = 3.0
+    MUTATION_RATE: float = .4
     MUTATION_SCALE: float = .3
     CONVERGENCE_THRESHOLD: float = .03
     CONVERGENCE_WINDOW: int = 10
@@ -18,14 +21,17 @@ class GA:
     In this genetic algorithm implementation genome is a set of vertices, starting with the first one and ending with the last one
     """
 
-    def __init__(self, verbose=True, genome_size=5, population_size=100,
-                 evaluator: HelperEvaluator = None, img_format: str = 'jpg'):
+    def __init__(self, log_path: str, verbose=True, genome_size=5, population_size=100,
+                 evaluator: HelperEvaluator = None, img_format: str = 'jpg', ):
         self.verbose = verbose
         self.GENOME_SIZE = genome_size
         self.population_size = population_size
         self.evaluator = evaluator
         self.img_format = img_format
         self.img_dir = './img_dir/'
+
+        self.df = pd.DataFrame()
+        self.log_path = log_path
 
         if not os.path.exists(self.img_dir):
             os.makedirs(self.img_dir)
@@ -52,7 +58,8 @@ class GA:
         s = Snowflake(genome)
         s.generate()
         final_img = s.draw(max_height=1000)
-        img = Image.fromarray(final_img, 'RGB')
+        print(filename)
+        img = Image.fromarray(final_img, 'L')
         img.save(filename)
 
     def render_population(self, population, epoch):
@@ -60,7 +67,7 @@ class GA:
         if not os.path.exists(epoch_dir):
             os.makedirs(epoch_dir)
 
-        for genome_id, genome in enumerate(population):
+        for genome_id, genome in tqdm(enumerate(population), desc='rendering population'):
             filename = self._get_genome_image_name(genome_id)
             filename = os.path.join(epoch_dir, filename)
             self._render_image(genome, filename=filename)
@@ -98,9 +105,17 @@ class GA:
             population = [self.mutate(x) for x in population]
 
             max_fitness = np.max(fitness)
+            median_fitness = np.median(fitness)
 
             if self.verbose:
-                print(f'Epoch: {epoch}, Max fitness: {max_fitness}')
+                print(f'Epoch: {epoch}, Max fitness: {max_fitness}, median_fitness: {median_fitness}')
+
+            self.df = self.df.append(
+                {'epoch': epoch,
+                 'max_fitness': max_fitness,
+                 'median_fitness': median_fitness}, ignore_index=True
+            )
+            self.df.to_csv(self.log_path)
             history.append(max_fitness)
 
             if epoch > self.CONVERGENCE_WINDOW:
@@ -119,10 +134,16 @@ class GA:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-l', '--logfile', help='Metrics file', required=True)
+    args = parser.parse_args()
+
     WORKDIR: str = os.getcwd()
     BASE_MODEL_NAME: str = 'MobileNet'
-    WEIGHTS_FILE: str = './weights.hdf5'
+
+    WEIGHTS_FILE: str = '../models/MobileNet/weights_mobilenet_aesthetic_0.07.hdf5'
+    print(WEIGHTS_FILE)
 
     he = HelperEvaluator(base_model_name=BASE_MODEL_NAME, weights_file=WEIGHTS_FILE)
-    genetic_algorithms = GA(evaluator=he, population_size=100)
+    genetic_algorithms = GA(evaluator=he, population_size=100, genome_size=5, log_path=args.logfile)
     genetic_algorithms.run(5)

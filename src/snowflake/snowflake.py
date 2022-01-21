@@ -12,16 +12,15 @@ class Snowflake:
         random.seed(random_seed)
         self.mh = 1000 // 2
         self.mw = int(2 * self.mh * math.tan(math.pi * 0.08333))
-        self.setup(genome)
+        self.setup(genome, max_cutouts=1000)
 
-    
     def setup(
-        self, 
-        genome,
-        min_cutouts=1,
-        max_cutouts=float("inf"),
-        max_global_iterations=10,
-        max_sub_iterations=5000
+            self,
+            genome,
+            min_cutouts=1,
+            max_cutouts=float("inf"),
+            max_global_iterations=10,
+            max_sub_iterations=500
     ):
         self.reset()
         self.genome = genome
@@ -50,9 +49,9 @@ class Snowflake:
     def generate(self):
         global_iterations = self.maximum_global_iterations
         while (
-            (len(self.cutouts) < self.min_cutouts_count
-            or len(self.cutouts) > self.max_cutouts_count)
-            and global_iterations > 0
+                (len(self.cutouts) < self.min_cutouts_count
+                 or len(self.cutouts) > self.max_cutouts_count)
+                and global_iterations > 0
         ):
             self.reset()
 

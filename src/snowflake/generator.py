@@ -83,6 +83,8 @@ class CutoutGenerator:
             all_seg.extend((c.first_segment, c.second_segment))
         
         steps = math.ceil((full_edge_seg_len * 2) / self.min_edge_segment_len)
+        if steps == 0.0 or steps == 0:
+            steps = 1
         step_size = full_edge_seg_len / steps
         max_len = float("inf")
 
