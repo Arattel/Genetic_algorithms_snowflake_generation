@@ -1,5 +1,7 @@
 # Snowflake generation using genetic algorithms
 
+[POSTER](https://miro.com/app/board/uXjVOTqg8wA=/?invite_link_id=363767552565)
+
 ### Evaluation methods 
 
 For automated evaluation of aesthetics of snowflakes, we're using models from [this repository](https://github.com/idealo/image-quality-assessment)
